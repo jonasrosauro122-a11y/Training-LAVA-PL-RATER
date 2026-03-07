@@ -2,16 +2,17 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { LogOut, LayoutDashboard, Car, Home } from "lucide-react"
+import { LogOut, LayoutDashboard, Car, Home, ClipboardList } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { LavaLogo } from "@/components/lava-logo"
-import { clearCurrentUser } from "@/lib/storage"
+import { createClient } from "@/lib/supabase/client"
 
 export function AppHeader({ vaName }: { vaName: string }) {
   const router = useRouter()
 
-  function handleLogout() {
-    clearCurrentUser()
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
     router.push("/")
   }
 
@@ -29,6 +30,12 @@ export function AppHeader({ vaName }: { vaName: string }) {
               <Button variant="ghost" size="sm" className="gap-2 text-foreground">
                 <LayoutDashboard className="h-4 w-4" />
                 <span className="hidden sm:inline">Dashboard</span>
+              </Button>
+            </Link>
+            <Link href="/pre-quote">
+              <Button variant="ghost" size="sm" className="gap-2 text-foreground">
+                <ClipboardList className="h-4 w-4" />
+                <span className="hidden sm:inline">Pre-Quote</span>
               </Button>
             </Link>
             <Link href="/quote/auto">

@@ -2,6 +2,48 @@
 // LAVA Training Rater - Core Type Definitions
 // ==========================================
 
+// --- Pre-Quote Form (Required before starting any quote) ---
+export interface PreQuoteForm {
+  id?: string
+  vaName: string
+  quoteDate: string
+  trainer: "Nash/Aurelle" | "Kyle/Chanie" | ""
+  teamLeader: "RJ" | "Martin" | "Ed" | "Rezyl" | ""
+}
+
+export const TRAINERS = [
+  { value: "Nash/Aurelle", label: "Nash/Aurelle" },
+  { value: "Kyle/Chanie", label: "Kyle/Chanie" },
+] as const
+
+export const TEAM_LEADERS = [
+  { value: "RJ", label: "RJ" },
+  { value: "Martin", label: "Martin" },
+  { value: "Ed", label: "Ed" },
+  { value: "Rezyl", label: "Rezyl" },
+] as const
+
+// --- Driver Info (enhanced) ---
+export interface DriverInfo {
+  id?: string
+  isPrimary: boolean
+  fullName: string
+  dateOfBirth: string
+  gender: "male" | "female" | "non-binary" | ""
+  maritalStatus: "single" | "married" | "divorced" | "widowed" | ""
+  licenseNumber: string
+  licenseState: string
+  licenseStatus: "valid" | "suspended" | "revoked" | "permit" | ""
+  yearsDriving: string
+  atFaultAccidents: string
+  movingViolations: string
+  sr22Required: boolean
+  fr44Required: boolean
+  goodStudent: boolean
+  distantStudent: boolean
+  defensiveDriving: boolean
+}
+
 // --- Personal Info ---
 export interface PersonalInfo {
   fullName: string
@@ -16,8 +58,10 @@ export interface PersonalInfo {
   phone: string
 }
 
-// --- Vehicle Info ---
+// --- Vehicle Info (enhanced with multi-car support) ---
 export interface VehicleInfo {
+  id?: string
+  vehicleNumber: number
   vin: string
   year: string
   make: string
@@ -45,17 +89,26 @@ export interface DrivingHistory {
   yearsWithCarrier: string
 }
 
-// --- Auto Coverage ---
+// --- Auto Coverage (enhanced with UM/UIM, PIP, payment plans) ---
 export interface AutoCoverage {
-  liabilityLimit: "25/50" | "50/100" | "100/300" | "250/500" | ""
-  compDeductible: "250" | "500" | "1000" | "2000" | ""
-  collisionDeductible: "250" | "500" | "1000" | "2000" | ""
-  uninsuredMotorist: boolean
-  uninsuredLimit: "25/50" | "50/100" | "100/300" | ""
-  medicalPayments: "1000" | "5000" | "10000" | "25000" | ""
+  liabilityLimit: "25/50" | "50/100" | "100/300" | "250/500" | "No Coverage" | ""
+  compDeductible: "250" | "500" | "1000" | "2000" | "No Coverage" | ""
+  collisionDeductible: "250" | "500" | "1000" | "2000" | "No Coverage" | ""
+  umPd: boolean
+  umPdLimit: "25/50" | "50/100" | "100/300" | "No Coverage" | ""
+  uimStacked: boolean
+  uimLimit: "25/50" | "50/100" | "100/300" | "No Coverage" | ""
+  medicalPayments: "1000" | "5000" | "10000" | "25000" | "No Coverage" | ""
+  pipCoverage: "2500" | "5000" | "10000" | "No Coverage" | ""
   rentalReimbursement: boolean
   rentalDailyLimit: "30" | "50" | "75" | ""
   roadsideAssistance: boolean
+  paymentPlan: "paid-in-full" | "2-pay" | "4-pay" | "monthly" | ""
+  priorInsurance: boolean
+  priorCarrier: string
+  priorLimits: string
+  yearsWithPrior: string
+  lapseInCoverage: boolean
 }
 
 // --- Auto Discounts ---
@@ -75,31 +128,65 @@ export interface AutoQuoteInput {
   discounts: AutoDiscounts
 }
 
-// --- Homeowners Property Info ---
+// --- Homeowners Property Info (enhanced) ---
 export interface PropertyInfo {
   policyType: "HO3" | "HO4" | "HO6" | ""
   yearBuilt: string
   squareFootage: string
   stories: string
-  roofType: "asphalt" | "tile" | "metal" | "slate" | ""
+  bedrooms: string
+  bathrooms: string
+  roofType: "gable" | "hip" | "flat" | "mansard" | ""
+  roofMaterial: "asphalt" | "tile" | "metal" | "slate" | "wood" | ""
   roofAge: string
+  roofUpdateYear: string
   constructionType: "frame" | "masonry" | "steel" | ""
   foundation: "slab" | "basement" | "crawlspace" | ""
+  heatingType: "central" | "heat-pump" | "baseboard" | "radiant" | ""
+  plumbingUpdateYear: string
+  electricalUpdateYear: string
+  // Security features
   securitySystem: boolean
+  fireAlarm: boolean
+  smokeDetectors: boolean
+  sprinklerSystem: boolean
+  deadbolts: boolean
+  gatedCommunity: boolean
+  // Liability risks
   swimmingPool: boolean
+  poolFenced: boolean
   trampoline: boolean
+  dogBreed: string
+  // Fire protection
   distanceToFireDept: string
   distanceToFireHydrant: string
+  fireProtectionClass: string
 }
 
-// --- Homeowners Coverage ---
+// --- Homeowners Coverage (enhanced with Cov A-D, deductibles) ---
 export interface HomeownersCoverageOptions {
-  dwellingCoverage: string
-  otherStructures: string
-  personalProperty: string
-  lossOfUse: string
+  // Coverage A-D
+  dwellingCoverage: string // Coverage A
+  otherStructures: string // Coverage B
+  personalProperty: string // Coverage C
+  lossOfUse: string // Coverage D
   liability: "100000" | "300000" | "500000" | ""
   medicalPayments: "1000" | "5000" | "10000" | ""
+  // Deductibles
+  aopDeductible: "500" | "1000" | "2500" | "5000" | ""
+  windHailDeductible: "1%" | "2%" | "5%" | "$1000" | "$2500" | ""
+  hurricaneDeductible: "2%" | "5%" | "10%" | ""
+  // Additional coverages
+  waterBackup: boolean
+  waterBackupLimit: string
+  earthquake: boolean
+  flood: boolean
+  replacementCost: boolean
+  scheduledPersonalProperty: boolean
+  // Prior insurance
+  priorInsurance: boolean
+  priorCarrier: string
+  yearsWithPrior: string
 }
 
 // --- Homeowners Claims ---
