@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useCallback, useEffect, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { AuthGuard } from "@/components/auth-guard"
 import { QuoteWizard } from "@/components/quote-wizard"
@@ -11,7 +11,7 @@ import { DrivingHistoryStep } from "@/components/auto-form/driving-history"
 import { CoverageOptionsStep } from "@/components/auto-form/coverage-options"
 import { DiscountsStep } from "@/components/auto-form/discounts"
 import { PaymentPlanStep } from "@/components/auto-form/payment-plan"
-import { getCurrentUser, saveQuote, generateQuoteId, generateVehicleId } from "@/lib/storage"
+import { getQuoteById, updateQuote } from "@/lib/storage"
 import { calculateAutoQuotes } from "@/lib/rating-engine/auto"
 import type {
   PersonalInfo,
@@ -21,6 +21,7 @@ import type {
   AutoDiscounts,
   AutoQuoteInput,
   PaymentPlan,
+  QuoteResult,
 } from "@/lib/types"
 
 const STEPS = [
@@ -32,49 +33,48 @@ const STEPS = [
   { label: "Payment Plan", shortLabel: "Pay" },
 ]
 
-const INITIAL_PERSONAL: PersonalInfo = {
-  fullName: "", dateOfBirth: "", gender: "", maritalStatus: "",
-  street: "", city: "", state: "", zip: "", email: "", phone: "",
-}
-
-const createInitialVehicle = (): VehicleInfo => ({
-  id: generateVehicleId(),
-  vin: "", year: "", make: "", model: "", bodyType: "",
-  primaryUse: "", annualMileage: "", garagingSameAsPersonal: true,
-  garagingStreet: "", garagingCity: "", garagingState: "", garagingZip: "",
-  antiTheft: false, ownership: "", lienholder: "",
-  deductible: "", rentalReimbursement: false, rentalDailyLimit: "",
-  roadsideAssistance: false,
-})
-
-const INITIAL_DRIVING: DrivingHistory = {
-  yearsDriving: "", atFaultAccidents: "0", movingViolations: "0",
-  licenseStatus: "", priorInsurance: false, priorCarrier: "", yearsWithCarrier: "",
-}
-
-const INITIAL_COVERAGE: AutoCoverage = {
-  liabilityLimit: "",
-  uninsuredMotorist: "",
-  uninsuredLimit: "",
-  medicalPayments: "",
-}
-
-const INITIAL_DISCOUNTS: AutoDiscounts = {
-  multiCar: false, homeownerBundle: false, goodDriver: false, safetyDevice: false, dynamicDrive: false,
-}
-
-function AutoQuoteContent() {
+function AutoEditContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const quoteId = searchParams.get("id")
+  
+  const [isLoading, setIsLoading] = useState(true)
+  const [originalQuote, setOriginalQuote] = useState<QuoteResult | null>(null)
   const [step, setStep] = useState(0)
-  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>(INITIAL_PERSONAL)
-  const [vehicles, setVehicles] = useState<VehicleInfo[]>([createInitialVehicle()])
-  const [drivingHistory, setDrivingHistory] = useState<DrivingHistory>(INITIAL_DRIVING)
-  const [coverage, setCoverage] = useState<AutoCoverage>(INITIAL_COVERAGE)
-  const [discounts, setDiscounts] = useState<AutoDiscounts>(INITIAL_DISCOUNTS)
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo | null>(null)
+  const [vehicles, setVehicles] = useState<VehicleInfo[]>([])
+  const [drivingHistory, setDrivingHistory] = useState<DrivingHistory | null>(null)
+  const [coverage, setCoverage] = useState<AutoCoverage | null>(null)
+  const [discounts, setDiscounts] = useState<AutoDiscounts | null>(null)
   const [paymentPlan, setPaymentPlan] = useState<PaymentPlan>("")
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  useEffect(() => {
+    if (!quoteId) {
+      router.replace("/dashboard")
+      return
+    }
+
+    const quote = getQuoteById(quoteId)
+    if (!quote || quote.type !== "auto") {
+      toast.error("Quote not found")
+      router.replace("/dashboard")
+      return
+    }
+
+    setOriginalQuote(quote)
+    const input = quote.input as AutoQuoteInput
+    setPersonalInfo(input.personalInfo)
+    setVehicles(input.vehicles || [])
+    setDrivingHistory(input.drivingHistory)
+    setCoverage(input.coverage)
+    setDiscounts(input.discounts)
+    setPaymentPlan(input.paymentPlan || "")
+    setIsLoading(false)
+  }, [quoteId, router])
+
   const validateStep = useCallback((s: number): boolean => {
+    if (!personalInfo || !coverage) return false
     const errs: Record<string, string> = {}
 
     if (s === 0) {
@@ -101,7 +101,7 @@ function AutoQuoteContent() {
       })
     }
 
-    if (s === 2) {
+    if (s === 2 && drivingHistory) {
       if (!drivingHistory.yearsDriving) errs.yearsDriving = "Required"
       if (!drivingHistory.licenseStatus) errs.licenseStatus = "Required"
       if (drivingHistory.atFaultAccidents === "") errs.atFaultAccidents = "Required"
@@ -121,11 +121,10 @@ function AutoQuoteContent() {
     return Object.keys(errs).length === 0
   }, [personalInfo, vehicles, drivingHistory, coverage, paymentPlan])
 
-  // Auto-enable multi-car discount when multiple vehicles are added
-  const effectiveDiscounts = {
+  const effectiveDiscounts = discounts ? {
     ...discounts,
     multiCar: vehicles.length > 1 ? true : discounts.multiCar,
-  }
+  } : null
 
   function handleNext() {
     if (validateStep(step)) {
@@ -141,7 +140,7 @@ function AutoQuoteContent() {
   }
 
   function handleSubmit() {
-    if (!validateStep(step)) {
+    if (!validateStep(step) || !originalQuote || !personalInfo || !drivingHistory || !coverage || !effectiveDiscounts) {
       toast.error("Please fill in all required fields.")
       return
     }
@@ -156,29 +155,41 @@ function AutoQuoteContent() {
     }
 
     const quotes = calculateAutoQuotes(input)
-    const vaName = getCurrentUser() || "Unknown"
-    const quoteId = generateQuoteId()
 
-    const result = {
-      id: quoteId,
-      type: "auto" as const,
-      vaName,
+    const updatedResult: QuoteResult = {
+      ...originalQuote,
       customerName: personalInfo.fullName,
-      createdAt: new Date().toISOString(),
       input,
       quotes,
     }
 
-    saveQuote(result)
-    router.push(`/quote/results?id=${quoteId}`)
+    updateQuote(updatedResult)
+    toast.success("Quote updated successfully!")
+    router.push(`/quote/results?id=${originalQuote.id}`)
+  }
+
+  if (isLoading || !personalInfo || !drivingHistory || !coverage || !discounts) {
+    return (
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-muted-foreground">Loading quote...</div>
+        </div>
+      </main>
+    )
   }
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Auto Insurance Quote</h1>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+          <span className="px-2 py-0.5 bg-amber-500/10 text-amber-600 rounded font-medium">
+            Editing
+          </span>
+          <span>Quote ID: {originalQuote?.id}</span>
+        </div>
+        <h1 className="text-2xl font-bold text-foreground">Edit Auto Insurance Quote</h1>
         <p className="text-muted-foreground mt-1">
-          Complete all 6 steps to generate quotes from 7 carriers.
+          Modify the quote details below. Changes will recalculate the premiums.
         </p>
       </div>
 
@@ -218,7 +229,7 @@ function AutoQuoteContent() {
             errors={errors}
           />
         )}
-        {step === 4 && (
+        {step === 4 && effectiveDiscounts && (
           <DiscountsStep
             data={effectiveDiscounts}
             onChange={setDiscounts}
@@ -237,10 +248,12 @@ function AutoQuoteContent() {
   )
 }
 
-export default function AutoQuotePage() {
+export default function AutoEditPage() {
   return (
     <AuthGuard>
-      <AutoQuoteContent />
+      <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+        <AutoEditContent />
+      </Suspense>
     </AuthGuard>
   )
 }

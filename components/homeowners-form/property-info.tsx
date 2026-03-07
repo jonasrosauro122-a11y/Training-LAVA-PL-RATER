@@ -19,6 +19,11 @@ export function PropertyInfoStep({ data, onChange, errors }: Props) {
     onChange({ ...data, [field]: value })
   }
 
+  const currentYear = new Date().getFullYear()
+  const roofAge = data.roofYearInstalled 
+    ? currentYear - parseInt(data.roofYearInstalled) 
+    : null
+
   return (
     <Card>
       <CardHeader>
@@ -93,34 +98,111 @@ export function PropertyInfoStep({ data, onChange, errors }: Props) {
           </div>
         </div>
 
-        {/* Roof */}
+        {/* Bedrooms / Bathrooms / Heating */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="bedrooms">Number of Bedrooms *</Label>
+            <Select value={data.numberOfBedrooms} onValueChange={(v) => update("numberOfBedrooms", v)}>
+              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 Bedroom</SelectItem>
+                <SelectItem value="2">2 Bedrooms</SelectItem>
+                <SelectItem value="3">3 Bedrooms</SelectItem>
+                <SelectItem value="4">4 Bedrooms</SelectItem>
+                <SelectItem value="5">5 Bedrooms</SelectItem>
+                <SelectItem value="6">6+ Bedrooms</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.numberOfBedrooms && <p className="text-xs text-destructive">{errors.numberOfBedrooms}</p>}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="bathrooms">Number of Bathrooms (T&B) *</Label>
+            <Select value={data.numberOfBathrooms} onValueChange={(v) => update("numberOfBathrooms", v)}>
+              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 Bathroom</SelectItem>
+                <SelectItem value="1.5">1.5 Bathrooms</SelectItem>
+                <SelectItem value="2">2 Bathrooms</SelectItem>
+                <SelectItem value="2.5">2.5 Bathrooms</SelectItem>
+                <SelectItem value="3">3 Bathrooms</SelectItem>
+                <SelectItem value="3.5">3.5 Bathrooms</SelectItem>
+                <SelectItem value="4">4+ Bathrooms</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.numberOfBathrooms && <p className="text-xs text-destructive">{errors.numberOfBathrooms}</p>}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Heating Type *</Label>
+            <Select value={data.heatingType} onValueChange={(v) => update("heatingType", v)}>
+              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="gas">Gas (Forced Air)</SelectItem>
+                <SelectItem value="electric">Electric</SelectItem>
+                <SelectItem value="oil">Oil</SelectItem>
+                <SelectItem value="propane">Propane</SelectItem>
+                <SelectItem value="heat-pump">Heat Pump</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.heatingType && <p className="text-xs text-destructive">{errors.heatingType}</p>}
+          </div>
+        </div>
+
+        {/* Roof Shape & Material */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label>Roof Type *</Label>
-            <Select value={data.roofType} onValueChange={(v) => update("roofType", v)}>
+            <Label>Roof Shape *</Label>
+            <Select value={data.roofShape} onValueChange={(v) => update("roofShape", v)}>
+              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="hip">Hip</SelectItem>
+                <SelectItem value="gable">Gable</SelectItem>
+                <SelectItem value="flat">Flat</SelectItem>
+                <SelectItem value="shed">Shed</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.roofShape && <p className="text-xs text-destructive">{errors.roofShape}</p>}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Roof Material *</Label>
+            <Select value={data.roofMaterial} onValueChange={(v) => update("roofMaterial", v)}>
               <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="asphalt">Asphalt Shingles</SelectItem>
                 <SelectItem value="tile">Tile</SelectItem>
                 <SelectItem value="metal">Metal</SelectItem>
+                <SelectItem value="wood">Wood</SelectItem>
                 <SelectItem value="slate">Slate</SelectItem>
               </SelectContent>
             </Select>
-            {errors.roofType && <p className="text-xs text-destructive">{errors.roofType}</p>}
+            {errors.roofMaterial && <p className="text-xs text-destructive">{errors.roofMaterial}</p>}
           </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="roofAge">Roof Age (years) *</Label>
-            <Input
-              id="roofAge"
-              type="number"
-              min="0"
-              max="50"
-              value={data.roofAge}
-              onChange={(e) => update("roofAge", e.target.value)}
-              placeholder="10"
-            />
-            {errors.roofAge && <p className="text-xs text-destructive">{errors.roofAge}</p>}
-          </div>
+        </div>
+
+        {/* Roof Year Installed */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="roofYear">Roof Year Installed / Last Updated *</Label>
+          <Input
+            id="roofYear"
+            type="number"
+            min="1900"
+            max={currentYear}
+            value={data.roofYearInstalled}
+            onChange={(e) => update("roofYearInstalled", e.target.value)}
+            placeholder={String(currentYear - 10)}
+          />
+          {roofAge !== null && roofAge >= 0 && (
+            <p className="text-xs text-muted-foreground">
+              Roof age: approximately {roofAge} year{roofAge !== 1 ? "s" : ""} old
+              {roofAge > 15 && (
+                <span className="text-amber-600 ml-1">
+                  - Older roofs may affect premium or eligibility
+                </span>
+              )}
+            </p>
+          )}
+          {errors.roofYearInstalled && <p className="text-xs text-destructive">{errors.roofYearInstalled}</p>}
         </div>
 
         {/* Construction & Foundation */}

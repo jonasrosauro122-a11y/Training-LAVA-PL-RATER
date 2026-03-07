@@ -18,6 +18,7 @@ export interface PersonalInfo {
 
 // --- Vehicle Info ---
 export interface VehicleInfo {
+  id: string // unique identifier for each vehicle
   vin: string
   year: string
   make: string
@@ -32,6 +33,13 @@ export interface VehicleInfo {
   garagingZip: string
   antiTheft: boolean
   ownership: "owned" | "financed" | "leased" | ""
+  // Lienholder/Lessor info
+  lienholder: string
+  // Vehicle-specific coverages
+  deductible: "250" | "500" | "1000" | "2000" | "none" | "" // "none" for liability-only
+  rentalReimbursement: boolean
+  rentalDailyLimit: "30" | "50" | "75" | ""
+  roadsideAssistance: boolean
 }
 
 // --- Driving History ---
@@ -48,14 +56,11 @@ export interface DrivingHistory {
 // --- Auto Coverage ---
 export interface AutoCoverage {
   liabilityLimit: "25/50" | "50/100" | "100/300" | "250/500" | ""
-  compDeductible: "250" | "500" | "1000" | "2000" | ""
-  collisionDeductible: "250" | "500" | "1000" | "2000" | ""
-  uninsuredMotorist: boolean
+  // Uninsured/Underinsured Motorist - now dropdown options
+  uninsuredMotorist: "none" | "state-minimum" | "standard" | ""
   uninsuredLimit: "25/50" | "50/100" | "100/300" | ""
-  medicalPayments: "1000" | "5000" | "10000" | "25000" | ""
-  rentalReimbursement: boolean
-  rentalDailyLimit: "30" | "50" | "75" | ""
-  roadsideAssistance: boolean
+  // Medical Payments with No Coverage option
+  medicalPayments: "none" | "1000" | "5000" | "10000" | "25000" | ""
 }
 
 // --- Auto Discounts ---
@@ -64,15 +69,20 @@ export interface AutoDiscounts {
   homeownerBundle: boolean
   goodDriver: boolean
   safetyDevice: boolean
+  dynamicDrive: boolean // New Dynamic Drive discount
 }
+
+// --- Payment Plan Options ---
+export type PaymentPlan = "paid-in-full" | "2-pay" | "4-pay" | "monthly" | ""
 
 // --- Full Auto Quote Input ---
 export interface AutoQuoteInput {
   personalInfo: PersonalInfo
-  vehicleInfo: VehicleInfo
+  vehicles: VehicleInfo[] // Changed to support multiple vehicles
   drivingHistory: DrivingHistory
   coverage: AutoCoverage
   discounts: AutoDiscounts
+  paymentPlan: PaymentPlan
 }
 
 // --- Homeowners Property Info ---
@@ -81,8 +91,10 @@ export interface PropertyInfo {
   yearBuilt: string
   squareFootage: string
   stories: string
-  roofType: "asphalt" | "tile" | "metal" | "slate" | ""
-  roofAge: string
+  // Enhanced roof fields
+  roofShape: "hip" | "gable" | "flat" | "shed" | "other" | ""
+  roofMaterial: "asphalt" | "tile" | "metal" | "wood" | "slate" | ""
+  roofYearInstalled: string // Changed from roofAge
   constructionType: "frame" | "masonry" | "steel" | ""
   foundation: "slab" | "basement" | "crawlspace" | ""
   securitySystem: boolean
@@ -90,6 +102,10 @@ export interface PropertyInfo {
   trampoline: boolean
   distanceToFireDept: string
   distanceToFireHydrant: string
+  // New property fields
+  numberOfBedrooms: string
+  numberOfBathrooms: string
+  heatingType: "gas" | "electric" | "oil" | "propane" | "heat-pump" | "other" | ""
 }
 
 // --- Homeowners Coverage ---
@@ -99,7 +115,7 @@ export interface HomeownersCoverageOptions {
   personalProperty: string
   lossOfUse: string
   liability: "100000" | "300000" | "500000" | ""
-  medicalPayments: "1000" | "5000" | "10000" | ""
+  medicalPayments: "none" | "1000" | "5000" | "10000" | "" // Added "none" option
 }
 
 // --- Homeowners Claims ---

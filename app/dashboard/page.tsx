@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Car, Home, FileText, TrendingUp, Clock } from "lucide-react"
+import { Car, Home, FileText, TrendingUp, Clock, Pencil, BarChart2 } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -58,7 +58,7 @@ function DashboardContent() {
 
       {/* QUICK ACTION CARDS */}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
 
         <Link href="/quote/auto" className="group">
           <Card className="h-full transition-all hover:shadow-lg hover:border-primary/30 cursor-pointer">
@@ -71,7 +71,7 @@ function DashboardContent() {
               <div>
                 <CardTitle className="text-lg">New Auto Quote</CardTitle>
                 <CardDescription className="mt-1">
-                  5-step auto insurance quoting wizard with VIN lookup
+                  6-step auto insurance quoting wizard with multi-vehicle support
                 </CardDescription>
               </div>
 
@@ -90,7 +90,26 @@ function DashboardContent() {
               <div>
                 <CardTitle className="text-lg">New Homeowners Quote</CardTitle>
                 <CardDescription className="mt-1">
-                  4-step homeowners / renters / condo quoting wizard
+                  5-step homeowners / renters / condo quoting wizard
+                </CardDescription>
+              </div>
+
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/reports" className="group">
+          <Card className="h-full transition-all hover:shadow-lg hover:border-primary/30 cursor-pointer">
+            <CardContent className="flex items-center gap-4 p-6">
+
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-secondary">
+                <BarChart2 className="h-7 w-7 text-muted-foreground" />
+              </div>
+
+              <div>
+                <CardTitle className="text-lg">Reports</CardTitle>
+                <CardDescription className="mt-1">
+                  View quote summaries and analytics
                 </CardDescription>
               </div>
 
@@ -276,13 +295,19 @@ function DashboardContent() {
                         </td>
 
                         <td className="py-3 px-2 text-right">
-
-                          <Link href={`/quote/results?id=${quote.id}`}>
-                            <Button variant="ghost" size="sm">
-                              View
-                            </Button>
-                          </Link>
-
+                          <div className="flex items-center justify-end gap-1">
+                            <Link href={`/quote/${quote.type === "auto" ? "auto" : "homeowners"}/edit?id=${quote.id}`}>
+                              <Button variant="ghost" size="sm" className="gap-1">
+                                <Pencil className="h-3 w-3" />
+                                Edit
+                              </Button>
+                            </Link>
+                            <Link href={`/quote/results?id=${quote.id}`}>
+                              <Button variant="ghost" size="sm">
+                                View
+                              </Button>
+                            </Link>
+                          </div>
                         </td>
 
                       </tr>

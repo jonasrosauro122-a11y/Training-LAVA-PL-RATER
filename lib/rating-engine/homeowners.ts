@@ -49,9 +49,14 @@ export function calculateHomeownersQuotes(
 ): CarrierQuote[] {
   const policyType = getPolicyTypeFactor(input.propertyInfo.policyType)
   const yearBuilt = getYearBuiltFactor(input.propertyInfo.yearBuilt)
+  // Calculate roof age from year installed
+  const currentYear = new Date().getFullYear()
+  const roofAge = input.propertyInfo.roofYearInstalled 
+    ? String(currentYear - parseInt(input.propertyInfo.roofYearInstalled))
+    : "10"
   const roof = getRoofFactor(
-    input.propertyInfo.roofType,
-    input.propertyInfo.roofAge
+    input.propertyInfo.roofMaterial, // Use roof material instead of old roofType
+    roofAge
   )
   const construction = getConstructionFactor(input.propertyInfo.constructionType)
   const risk = getPropertyRiskFactor(
@@ -78,8 +83,25 @@ export function calculateHomeownersQuotes(
     { label: "Personal Property (C)", value: `${input.coverage.personalProperty || 50}% of A` },
     { label: "Liability", value: `$${parseInt(input.coverage.liability || "100000").toLocaleString()}` },
   ]
-  if (input.coverage.medicalPayments) {
+  if (input.coverage.medicalPayments && input.coverage.medicalPayments !== "none") {
     coverageDetails.push({ label: "Medical Payments", value: `$${parseInt(input.coverage.medicalPayments).toLocaleString()}` })
+  }
+  
+  // Add property details
+  if (input.propertyInfo.roofShape) {
+    const roofShapeLabels: Record<string, string> = {
+      hip: "Hip", gable: "Gable", flat: "Flat", shed: "Shed", other: "Other"
+    }
+    coverageDetails.push({ label: "Roof Shape", value: roofShapeLabels[input.propertyInfo.roofShape] || input.propertyInfo.roofShape })
+  }
+  if (input.propertyInfo.roofMaterial) {
+    const roofMaterialLabels: Record<string, string> = {
+      asphalt: "Asphalt Shingles", tile: "Tile", metal: "Metal", wood: "Wood", slate: "Slate"
+    }
+    coverageDetails.push({ label: "Roof Material", value: roofMaterialLabels[input.propertyInfo.roofMaterial] || input.propertyInfo.roofMaterial })
+  }
+  if (input.propertyInfo.roofYearInstalled) {
+    coverageDetails.push({ label: "Roof Year", value: input.propertyInfo.roofYearInstalled })
   }
 
   // Build discounts

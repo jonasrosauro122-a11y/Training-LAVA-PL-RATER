@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Download, BarChart3 } from "lucide-react"
+import { ArrowLeft, Download, BarChart3, Pencil } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AuthGuard } from "@/components/auth-guard"
@@ -75,13 +75,21 @@ function ResultsContent() {
             Back to Dashboard
           </Button>
         </Link>
-        <Button
-          onClick={() => exportQuotePDF(result)}
-          className="gap-2 lava-gradient-bg text-white border-0 hover:opacity-90 transition-opacity"
-        >
-          <Download className="h-4 w-4" />
-          Export PDF
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link href={`/quote/${result.type === "auto" ? "auto" : "homeowners"}/edit?id=${result.id}`}>
+            <Button variant="outline" className="gap-2">
+              <Pencil className="h-4 w-4" />
+              Edit Quote
+            </Button>
+          </Link>
+          <Button
+            onClick={() => exportQuotePDF(result)}
+            className="gap-2 lava-gradient-bg text-white border-0 hover:opacity-90 transition-opacity"
+          >
+            <Download className="h-4 w-4" />
+            Export PDF
+          </Button>
+        </div>
       </div>
 
       {/* Summary Header */}

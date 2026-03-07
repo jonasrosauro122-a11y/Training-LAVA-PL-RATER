@@ -120,11 +120,17 @@ export function CoverageStep({ data, onChange, errors }: Props) {
             <Select value={data.medicalPayments} onValueChange={(v) => update("medicalPayments", v)}>
               <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">No Coverage</SelectItem>
                 <SelectItem value="1000">$1,000</SelectItem>
                 <SelectItem value="5000">$5,000</SelectItem>
                 <SelectItem value="10000">$10,000</SelectItem>
               </SelectContent>
             </Select>
+            {data.medicalPayments === "none" && (
+              <p className="text-xs text-amber-600">
+                Without Medical Payments coverage, guests injured on your property may need to file a liability claim.
+              </p>
+            )}
           </div>
         </div>
       </CardContent>

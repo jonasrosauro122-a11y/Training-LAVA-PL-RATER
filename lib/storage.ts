@@ -71,6 +71,24 @@ export function getQuoteById(id: string): QuoteResult | null {
   return getQuotes().find((q) => q.id === id) || null
 }
 
+export function updateQuote(updatedQuote: QuoteResult): void {
+  const quotes = getQuotes()
+  const index = quotes.findIndex((q) => q.id === updatedQuote.id)
+  if (index !== -1) {
+    quotes[index] = updatedQuote
+    localStorage.setItem(KEYS.quotes, JSON.stringify(quotes))
+  }
+}
+
+export function deleteQuote(id: string): void {
+  const quotes = getQuotes().filter((q) => q.id !== id)
+  localStorage.setItem(KEYS.quotes, JSON.stringify(quotes))
+}
+
 export function generateQuoteId(): string {
   return `Q-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
+}
+
+export function generateVehicleId(): string {
+  return `V-${Date.now()}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`
 }
