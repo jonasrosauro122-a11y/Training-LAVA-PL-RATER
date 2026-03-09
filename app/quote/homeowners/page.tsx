@@ -30,25 +30,30 @@ const STEPS = [
 ]
 
 const INITIAL_PERSONAL: PersonalInfo = {
-  fullName: "", dateOfBirth: "", gender: "", maritalStatus: "",
-  street: "", city: "", state: "", zip: "", email: "", phone: "",
+  firstName: "", lastName: "", fullName: "", dateOfBirth: "", gender: "", maritalStatus: "",
+  street: "", city: "", state: "", zip: "", county: "", email: "", phone: "",
+  yearsAtAddress: "", ownership: "", currentCarrier: "", currentPremium: "",
+  policyExpiration: "", priorCoverage: "", coverageLapses: false,
 }
 
 const INITIAL_PROPERTY: PropertyInfo = {
-  policyType: "HO3", yearBuilt: "", squareFootage: "", stories: "1",
-  roofType: "", roofAge: "", constructionType: "", foundation: "",
-  securitySystem: false, swimmingPool: false, trampoline: false,
+  policyType: "HO3", propertyType: "", yearBuilt: "", yearRoofUpdated: "",
+  squareFootage: "", stories: "1", roofShape: "", roofType: "", roofAge: "",
+  constructionType: "", foundation: "", bedrooms: "", bathrooms: "",
+  heatingType: "", coolingType: "", fireAlarm: false, securitySystem: false,
+  deadbolts: false, swimmingPool: false, trampoline: false,
   distanceToFireDept: "", distanceToFireHydrant: "",
 }
 
 const INITIAL_COVERAGE: HomeownersCoverageOptions = {
   dwellingCoverage: "250000", otherStructures: "10",
   personalProperty: "50", lossOfUse: "20",
-  liability: "", medicalPayments: "5000",
+  liability: "", medicalPayments: "5000", deductible: "1000",
 }
 
 const INITIAL_CLAIMS: HomeownersClaims = {
   numberOfClaims: "0", claimTypes: [], priorCarrier: "",
+  policyExpiration: "", claimsLast5Years: "", priorCoverageDuration: "",
 }
 
 const INITIAL_DISCOUNTS: HomeownersDiscounts = {
