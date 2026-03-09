@@ -8,12 +8,22 @@ import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { GraduationCap, UserCog } from "lucide-react"
 
-import { getCurrentUser, setCurrentUser } from "@/lib/storage"
+import { getCurrentUser, setCurrentUser, setUserRole, getUserRole } from "@/lib/storage"
+
+const TRAINER_PASSWORD = "LavaTrainer2025!"
 
 export default function LoginPage() {
   const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [role, setRole] = useState<"student" | "trainer">("student")
   const [error, setError] = useState("")
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false)
+  const [trainerPassword, setTrainerPassword] = useState("")
+  const [passwordError, setPasswordError] = useState("")
   const router = useRouter()
 
   useEffect(() => {
@@ -23,22 +33,53 @@ export default function LoginPage() {
     }
   }, [router])
 
+  function handleRoleChange(value: string) {
+    if (value === "trainer") {
+      setShowPasswordDialog(true)
+    } else if (value === "student") {
+      setRole("student")
+    }
+  }
+
+  function handlePasswordSubmit() {
+    if (trainerPassword === TRAINER_PASSWORD) {
+      setRole("trainer")
+      setShowPasswordDialog(false)
+      setTrainerPassword("")
+      setPasswordError("")
+    } else {
+      setPasswordError("Incorrect password. Access denied.")
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    const trimmed = name.trim()
+    const trimmedName = name.trim()
+    const trimmedEmail = email.trim().toLowerCase()
 
-    if (!trimmed) {
-      setError("Please enter your name to continue.")
+    if (!trimmedName) {
+      setError("Please enter your full name.")
       return
     }
 
-    if (trimmed.length < 2) {
+    if (trimmedName.length < 2) {
       setError("Name must be at least 2 characters.")
       return
     }
 
-    setCurrentUser(trimmed)
+    if (!trimmedEmail) {
+      setError("Please enter your email address.")
+      return
+    }
+
+    if (!trimmedEmail.endsWith("@lavatraining.com")) {
+      setError("Email must end with @lavatraining.com")
+      return
+    }
+
+    setCurrentUser(trimmedName, trimmedEmail)
+    setUserRole(role)
     router.push("/dashboard")
   }
 
@@ -82,7 +123,7 @@ export default function LoginPage() {
           </div>
 
           <CardDescription className="text-base text-muted-foreground mt-3">
-            Insurance quoting training simulator. Enter your name to get started.
+            Insurance quoting training simulator. Enter your credentials to get started.
           </CardDescription>
 
         </CardHeader>
@@ -91,10 +132,30 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
 
+            {/* Role Toggle */}
+            <div className="flex flex-col gap-2">
+              <Label className="text-sm font-medium">Role</Label>
+              <ToggleGroup
+                type="single"
+                value={role}
+                onValueChange={handleRoleChange}
+                className="justify-start"
+              >
+                <ToggleGroupItem value="student" aria-label="VA Student" className="gap-2 flex-1">
+                  <GraduationCap className="h-4 w-4" />
+                  VA Student
+                </ToggleGroupItem>
+                <ToggleGroupItem value="trainer" aria-label="Trainer" className="gap-2 flex-1">
+                  <UserCog className="h-4 w-4" />
+                  Trainer
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
             <div className="flex flex-col gap-2">
 
               <Label htmlFor="va-name" className="text-sm font-medium">
-                Your Name
+                Full Name *
               </Label>
 
               <Input
@@ -110,13 +171,37 @@ export default function LoginPage() {
                 className="h-11"
               />
 
-              {error && (
-                <p className="text-sm text-destructive" role="alert">
-                  {error}
-                </p>
-              )}
+            </div>
+
+            <div className="flex flex-col gap-2">
+
+              <Label htmlFor="va-email" className="text-sm font-medium">
+                Email *
+              </Label>
+
+              <Input
+                id="va-email"
+                type="email"
+                placeholder="e.g. jonasrosauro123@lavatraining.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  if (error) setError("")
+                }}
+                className="h-11"
+              />
+
+              <p className="text-xs text-muted-foreground">
+                Must be a @lavatraining.com email address
+              </p>
 
             </div>
+
+            {error && (
+              <p className="text-sm text-destructive" role="alert">
+                {error}
+              </p>
+            )}
 
             <Button
               type="submit"
@@ -137,6 +222,48 @@ export default function LoginPage() {
         </CardContent>
 
       </Card>
+
+      {/* Trainer Password Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Trainer Access</DialogTitle>
+            <DialogDescription>
+              Enter the trainer password to access trainer mode.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="trainer-password">Password</Label>
+              <Input
+                id="trainer-password"
+                type="password"
+                value={trainerPassword}
+                onChange={(e) => {
+                  setTrainerPassword(e.target.value)
+                  if (passwordError) setPasswordError("")
+                }}
+                placeholder="Enter trainer password"
+              />
+              {passwordError && (
+                <p className="text-sm text-destructive">{passwordError}</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowPasswordDialog(false)
+              setTrainerPassword("")
+              setPasswordError("")
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handlePasswordSubmit} className="lava-gradient-bg text-white border-0">
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </main>
   )
