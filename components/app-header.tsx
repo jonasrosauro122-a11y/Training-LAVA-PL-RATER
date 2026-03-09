@@ -31,13 +31,13 @@ export function AppHeader({ vaName }: { vaName: string }) {
                 <span className="hidden sm:inline">Dashboard</span>
               </Button>
             </Link>
-            <Link href="/quote/auto">
+            <Link href="/pre-quote?type=auto">
               <Button variant="ghost" size="sm" className="gap-2 text-foreground">
                 <Car className="h-4 w-4" />
                 <span className="hidden sm:inline">Auto</span>
               </Button>
             </Link>
-            <Link href="/quote/homeowners">
+            <Link href="/pre-quote?type=homeowners">
               <Button variant="ghost" size="sm" className="gap-2 text-foreground">
                 <Home className="h-4 w-4" />
                 <span className="hidden sm:inline">Homeowners</span>
