@@ -16,8 +16,10 @@ import { ClipboardList, ArrowRight } from "lucide-react"
 import { getCurrentUser, savePreQuoteForm, setCurrentPreQuoteForm } from "@/lib/storage"
 
 const TRAINERS = [
-  { value: "nash", label: "Nash", assistant: "Aurelle" },
-  { value: "kyle", label: "Kyle", assistant: "Chanie" },
+  { value: "nash", label: "Nash" },
+  { value: "au", label: "Au" },
+  { value: "kyle", label: "Kyle" },
+  { value: "chanie", label: "Chanie" },
 ]
 
 const TEAM_LEADERS = [
