@@ -86,6 +86,45 @@ export function ClaimsHistoryStep({ data, onChange, errors }: Props) {
             placeholder="State Farm"
           />
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="policyExpiration">Policy Expiration Date</Label>
+            <Input
+              id="policyExpiration"
+              type="date"
+              value={data.policyExpiration || ""}
+              onChange={(e) => update("policyExpiration", e.target.value)}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Prior Coverage Duration</Label>
+            <Select value={data.priorCoverageDuration || ""} onValueChange={(v) => update("priorCoverageDuration", v)}>
+              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="less_than_1">Less than 1 year</SelectItem>
+                <SelectItem value="1_to_3">1-3 years</SelectItem>
+                <SelectItem value="3_to_5">3-5 years</SelectItem>
+                <SelectItem value="more_than_5">More than 5 years</SelectItem>
+                <SelectItem value="none">No prior coverage</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label>Claims in Last 5 Years</Label>
+          <Select value={data.claimsLast5Years || ""} onValueChange={(v) => update("claimsLast5Years", v)}>
+            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">No claims</SelectItem>
+              <SelectItem value="1">1 claim</SelectItem>
+              <SelectItem value="2">2 claims</SelectItem>
+              <SelectItem value="3_plus">3+ claims</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardContent>
     </Card>
   )
