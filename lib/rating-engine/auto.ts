@@ -13,15 +13,15 @@ import {
   getAutoDiscountFactor,
 } from "./factors"
 
-// Per-carrier base annual rates
+// Per-carrier base annual rates (updated carriers)
 const CARRIER_BASE_RATES: Record<string, number> = {
   travelers: 1150,
   safeco: 1080,
   progressive: 980,
-  nationwide: 1050,
-  hartford: 1200,
-  foremost: 920,
-  branch: 1020,
+  mercury: 1020,
+  bamboo: 890,
+  erie: 1100,
+  national_general: 950,
 }
 
 // Each carrier has a slight variance range
@@ -29,10 +29,10 @@ const CARRIER_VARIANCE: Record<string, [number, number]> = {
   travelers: [-0.03, 0.04],
   safeco: [-0.04, 0.03],
   progressive: [-0.05, 0.05],
-  nationwide: [-0.03, 0.03],
-  hartford: [-0.02, 0.04],
-  foremost: [-0.04, 0.06],
-  branch: [-0.05, 0.04],
+  mercury: [-0.03, 0.03],
+  bamboo: [-0.04, 0.06],
+  erie: [-0.02, 0.04],
+  national_general: [-0.05, 0.04],
 }
 
 function seededRandom(seed: string): number {
@@ -47,8 +47,13 @@ function seededRandom(seed: string): number {
 
 export function calculateAutoQuotes(input: AutoQuoteInput): CarrierQuote[] {
   const ageFactor = getAgeFactor(input.personalInfo.dateOfBirth)
-  const vehicleAgeFactor = getVehicleAgeFactor(input.vehicleInfo.year)
-  const mileageFactor = getMileageFactor(input.vehicleInfo.annualMileage)
+  
+  // Handle multiple vehicles - use first vehicle for primary calculations, add per-vehicle costs
+  const vehicles = input.vehicles && input.vehicles.length > 0 ? input.vehicles : []
+  const primaryVehicle = vehicles[0] || { year: "2020", annualMileage: "12000" }
+  
+  const vehicleAgeFactor = getVehicleAgeFactor(primaryVehicle.year)
+  const mileageFactor = getMileageFactor(primaryVehicle.annualMileage)
   const drivingRecord = getDrivingRecordFactor(
     input.drivingHistory.atFaultAccidents,
     input.drivingHistory.movingViolations
@@ -60,6 +65,9 @@ export function calculateAutoQuotes(input: AutoQuoteInput): CarrierQuote[] {
   const collisionDeductible = getDeductibleFactor(input.coverage.collisionDeductible)
   const stateFactor = getStateFactor(input.personalInfo.state)
   const discountFactor = getAutoDiscountFactor(input.discounts)
+  
+  // Multi-vehicle multiplier (each additional vehicle adds 75% of base rate)
+  const vehicleMultiplier = vehicles.length > 0 ? 1 + (vehicles.length - 1) * 0.75 : 1
 
   // Extra coverage additions
   let coverageAddon = 0
@@ -94,11 +102,12 @@ export function calculateAutoQuotes(input: AutoQuoteInput): CarrierQuote[] {
   if (input.discounts.homeownerBundle) discountsApplied.push("Home Bundle")
   if (input.discounts.goodDriver) discountsApplied.push("Good Driver")
   if (input.discounts.safetyDevice) discountsApplied.push("Safety Device")
+  if (input.discounts.dynamicDrive) discountsApplied.push("Dynamic Drive")
 
   // AM Best ratings per carrier (simulated)
   const AM_BEST: Record<string, number> = {
-    travelers: 5, safeco: 4, progressive: 4, nationwide: 5,
-    hartford: 5, foremost: 3, branch: 3,
+    travelers: 5, safeco: 4, progressive: 4, mercury: 4,
+    bamboo: 3, erie: 5, national_general: 4,
   }
 
   const seedBase = `${input.personalInfo.fullName}-${input.vehicleInfo.vin}-${input.personalInfo.zip}`
@@ -121,6 +130,7 @@ export function calculateAutoQuotes(input: AutoQuoteInput): CarrierQuote[] {
         ((compDeductible + collisionDeductible) / 2) *
         stateFactor *
         discountFactor *
+        vehicleMultiplier *
         variance +
         coverageAddon) *
         100

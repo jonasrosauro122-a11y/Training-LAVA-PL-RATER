@@ -122,13 +122,15 @@ export function getAutoDiscountFactor(discounts: {
   homeownerBundle: boolean
   goodDriver: boolean
   safetyDevice: boolean
+  dynamicDrive?: boolean
 }): number {
   let factor = 1.0
   if (discounts.multiCar) factor -= 0.05
   if (discounts.homeownerBundle) factor -= 0.1
   if (discounts.goodDriver) factor -= 0.08
   if (discounts.safetyDevice) factor -= 0.03
-  return Math.max(factor, 0.7)
+  if (discounts.dynamicDrive) factor -= 0.07
+  return Math.max(factor, 0.65)
 }
 
 // --- Homeowners Factors ---

@@ -13,25 +13,25 @@ import {
   getStateFactor,
 } from "./factors"
 
-// Per-carrier base annual rate for a $250k dwelling HO3
+// Per-carrier base annual rate for a $250k dwelling HO3 (updated carriers)
 const CARRIER_BASE_RATES: Record<string, number> = {
   travelers: 1350,
   safeco: 1280,
   progressive: 1180,
-  nationwide: 1300,
-  hartford: 1420,
-  foremost: 1100,
-  branch: 1220,
+  mercury: 1250,
+  bamboo: 1050,
+  erie: 1380,
+  national_general: 1150,
 }
 
 const CARRIER_VARIANCE: Record<string, [number, number]> = {
   travelers: [-0.03, 0.04],
   safeco: [-0.04, 0.03],
   progressive: [-0.05, 0.05],
-  nationwide: [-0.03, 0.03],
-  hartford: [-0.02, 0.04],
-  foremost: [-0.04, 0.06],
-  branch: [-0.05, 0.04],
+  mercury: [-0.03, 0.03],
+  bamboo: [-0.04, 0.06],
+  erie: [-0.02, 0.04],
+  national_general: [-0.05, 0.04],
 }
 
 function seededRandom(seed: string): number {
@@ -93,8 +93,8 @@ export function calculateHomeownersQuotes(
   if (input.discounts.flood) discountsApplied.push("Flood")
 
   const AM_BEST: Record<string, number> = {
-    travelers: 5, safeco: 4, progressive: 4, nationwide: 5,
-    hartford: 5, foremost: 3, branch: 3,
+    travelers: 5, safeco: 4, progressive: 4, mercury: 4,
+    bamboo: 3, erie: 5, national_general: 4,
   }
 
   const seedBase = `${input.personalInfo.fullName}-${input.propertyInfo.yearBuilt}-${input.personalInfo.zip}`
